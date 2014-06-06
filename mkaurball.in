@@ -31,7 +31,7 @@ usage() {
 mkaurball() {
   local tarball_basename= tarball_fullname= tmpdir=
 
-  if ! . ./PKGBUILD; then
+  if [[ ! -f ./PKGBUILD ]]; then
     die 'Unable to source %s/PKGBUILD' "$PWD"
   fi
 
