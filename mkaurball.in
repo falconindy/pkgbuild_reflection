@@ -28,6 +28,7 @@ usage() {
       '    -a <file>  package <file> as .AURINFO' \
       '    -e         edit .AURINFO before repackaging' \
       '    -f         pass the --force flag to makepkg' \
+      '    -r         pass the --asroot flag to makepkg' \
       '    -h         display this help message and exit'
 }
 
@@ -93,7 +94,7 @@ mkaurball() {
   fi
 }
 
-while getopts ':a:efh' flag; do
+while getopts ':a:efrh' flag; do
   case $flag in
     a)
       srcinfo_path=$OPTARG
@@ -103,6 +104,9 @@ while getopts ':a:efh' flag; do
       ;;
     f)
       makepkg_args+=('--force')
+      ;;
+    r)
+      makepkg_args+=('--asroot')
       ;;
     h)
       usage
