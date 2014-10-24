@@ -5,6 +5,7 @@ m4_include(pkgbuild_introspection.inc.sh)
 # TODO: remove --ignorearch once pacman>=4.2.x is sufficiently commonplace.
 makepkg_args=('--source' '--ignorearch')
 buildfile=./PKGBUILD
+include_files=()
 
 tmpdirs=()
 trap 'rm -rf "${tmpdirs[@]}"' EXIT
@@ -30,6 +31,7 @@ usage() {
       '    -a <file>         package <file> as .AURINFO' \
       '    -e                edit .AURINFO before repackaging' \
       '    -f                pass the --force flag to makepkg' \
+      '    -i <file>         include an additional file' \
       '    -p <file>         use <file> as PKGBUILD' \
       '    -h                display this help message and exit' \
       '' \
@@ -90,6 +92,14 @@ mkaurball() {
     fi
   fi
 
+  if [[ $include_files ]]; then
+    for file in "${include_files[@]}"; do
+      if ! cp "$file" "$tmpdir/$tarball_basename/"; then
+        die 'Failed to add %s to tarball' "$file"
+      fi
+    done
+  fi
+
   if (( edit_srcinfo )); then
     # TODO: validate the .AURINFO
     "${VISUAL:-${EDITOR:-vi}}" "$tmpdir/$tarball_basename/.AURINFO"
@@ -102,7 +112,7 @@ mkaurball() {
   fi
 }
 
-while getopts ':a:efp:h-:' flag; do
+while getopts ':a:efi:p:h-:' flag; do
   case $flag in
     a)
       srcinfo_path=$OPTARG
@@ -112,6 +122,9 @@ while getopts ':a:efp:h-:' flag; do
       ;;
     f)
       makepkg_args+=('--force')
+      ;;
+    i)
+      include_files+=($OPTARG)
       ;;
     p)
       buildfile=$OPTARG
