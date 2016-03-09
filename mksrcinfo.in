@@ -4,7 +4,9 @@ usage() {
   printf '%s\n' \
       'mksrcinfo v@VERSION@' \
       '' \
-      'mksrcinfo reads from $PWD/PKGBUILD and writes an equivalent .SRCINFO.' \
+      'mksrcinfo reads the target PKGBUILD and writes an equivalent .SRCINFO.' \
+      'Without passing any arguments, mksrcinfo will read from $PWD/PKGBUILD' \
+      'and write to $PWD/.SRCINFO.' \
       '' \
       'Usage: mksrcinfo [/path/to/pkgbuild]' \
       '    -h                display this help message and exit' \
@@ -57,7 +59,9 @@ shift $(( OPTIND - 1 ))
 srcinfo_tmp=$(mktemp --tmpdir srcinfo.XXXXXX)
 trap 'rm "$srcinfo_tmp"' EXIT
 
-if makepkg --printsrcinfo >"$srcinfo_tmp"; then
+pkgbuild=${1:-$PWD/PKGBUILD}
+if (cd "${PKGBUILD%/*}"; makepkg -p "${pkgbuild##*/}" --printsrcinfo) \
+  >"$srcinfo_tmp"; then
   if ! srcinfo_equal "$srcinfo_tmp" "$srcinfo_dest"; then
     # use cat rather than cp or move to handle cases where $srcinfo_dest isn't a
     # regular file (e.g. /dev/stdout).
